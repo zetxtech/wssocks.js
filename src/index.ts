@@ -11,6 +11,24 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname.split("/");
       
+      if (path[1] === "") {
+        const host = url.host;
+        const welcomeMessage = `WSSocks.js is running. You can use WSSocks client to connect to it:
+
+For network provider:
+wssocks provider -u https://${host} -t your_token -c your_connector_token
+
+For connector:
+wssocks connector -u https://${host} -t your_connector_token
+
+WSSocks client can be downloaded at https://github.com/zetxtech/wssocks`;
+
+        return new Response(welcomeMessage, {
+          status: 200,
+          headers: { "Content-Type": "text/plain" }
+        });
+      }
+      
       if (path[1] === "socket" && request.headers.get("Upgrade") === "websocket") {
         const token = url.searchParams.get("token");
         const reverse = url.searchParams.get("reverse");

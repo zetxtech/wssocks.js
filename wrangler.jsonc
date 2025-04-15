@@ -25,11 +25,7 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["Relay"],
-    },
-    {
-      "tag": "v1",
-      "new_sqlite_classes": ["Token"],
+      "new_sqlite_classes": ["Relay", "Token"]
     },
   ],
 }
