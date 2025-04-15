@@ -16,6 +16,7 @@ import {
   AuthResponseMessage,
 } from "./message";
 import { handleErrors } from "./common";
+import { type Token } from "./token";
 
 export class Relay extends DurableObject {
   private providerChannels: Map<string, WebSocket>;
@@ -27,6 +28,7 @@ export class Relay extends DurableObject {
   private state: DurableObjectState;
   protected declare env: Env;
   private storage: DurableObjectStorage;
+  private token: DurableObjectStub<Token>;
 
   constructor(state: DurableObjectState, env: Env) {
     super(state, env);
@@ -34,6 +36,8 @@ export class Relay extends DurableObject {
     this.state = state;
     this.env = env;
     this.storage = state.storage;
+
+    this.token = env.TOKEN.get(env.TOKEN.idFromName("main"));
 
     this.providers = new Set();
     this.connectors = new Set();
@@ -80,6 +84,17 @@ export class Relay extends DurableObject {
     if (!tokens.includes(token)) {
       tokens.push(token);
       await this.storage.put('tokens', tokens);
+    }
+  }
+
+  private async updateMetadata() {
+    const tokens = await this.storage.get('tokens') as string[] || [];
+    for (const tokenName of tokens) {
+      const tokenHash = await this.sha256(tokenName);
+      await this.token.updateRelayMetadata(tokenHash, {
+        providerCount: this.providers.size,
+        connectorCount: this.connectors.size
+      });
     }
   }
 
@@ -244,26 +259,33 @@ export class Relay extends DurableObject {
 
         case MessageType.Connector: {
           if (isProvider) {
-            // Only providers can initiate connector registration
             const connectorMsg = msg as ConnectorMessage;
 
             // Generate random token if not provided
             if (!connectorMsg.connectorToken) {
-              const randomBytes = new Uint8Array(8); // 16 characters in hex
+              const randomBytes = new Uint8Array(8);
               crypto.getRandomValues(randomBytes);
               connectorMsg.connectorToken = Array.from(randomBytes)
                 .map(b => b.toString(16).padStart(2, '0'))
                 .join('');
             }
 
-            // Register the connector token in ConnectorMap
             const tokenHash = await this.sha256(connectorMsg.connectorToken)
-            const tokenId = this.env.TOKEN.idFromName(tokenHash);
-            const token = this.env.TOKEN.get(tokenId);
-            await token.setRelay(this.state.id.toString());
+            
+            // Get the relay token that created this relay
+            const tokens = await this.storage.get('tokens') as string[] || [];
+            if (tokens.length > 0) {
+              const relayTokenHash = await this.sha256(tokens[0]);
+              await this.token.addConnectorToken(relayTokenHash, connectorMsg.connectorToken);
+            }
+            
+            await this.token.setRelay(tokenHash, this.state.id.toString());
             
             // Store the token ID
             await this.saveToken(connectorMsg.connectorToken);
+
+            // Update metadata after adding connector token
+            await this.updateMetadata();
 
             // Notify the provider about successful connector registration
             const response: ConnectorResponseMessage = {
@@ -375,6 +397,9 @@ export class Relay extends DurableObject {
       this.broadcastPartnersCountToProviders();
     }
 
+    // Update metadata after connection close
+    await this.updateMetadata();
+
     // Find and disconnect all channels associated with this WebSocket
     for (const [channelId, provider] of this.providerChannels.entries()) {
       if (provider === ws || this.connectorChannels.get(channelId) === ws) {
@@ -395,9 +420,7 @@ export class Relay extends DurableObject {
       const tokens = await this.storage.get('tokens') as string[] || [];
       for (const tokenName of tokens) {
         const tokenHash = await this.sha256(tokenName)
-        const tokenId = this.env.TOKEN.idFromName(tokenHash);
-        const token = this.env.TOKEN.get(tokenId);
-        await token.delete();
+        await this.token.deleteToken(tokenHash);
       }
 
       // 2. Send Disconnect messages to all remaining connectors

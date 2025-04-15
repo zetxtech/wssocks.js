@@ -36,9 +36,8 @@ async function handleWebsocket(request: Request, env: Env, tokenHash: string, is
   let relayId: DurableObjectId;
 
   if (!isProvider) {
-    const tokenId = env.TOKEN.idFromName(tokenHash);
-    const token = env.TOKEN.get(tokenId);
-    const relayStr = await token.getRelay();
+    const token = env.TOKEN.get(env.TOKEN.idFromName("main"));
+    const relayStr = await token.getRelay(tokenHash);
     if (!relayStr) {
       let pair = new WebSocketPair();
       const [client, server] = [pair[0], pair[1]];
