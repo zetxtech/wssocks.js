@@ -1,22 +1,23 @@
 {
-	"name": "cloudflare-workers-openapi",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"deploy": "wrangler deploy",
-		"dev": "wrangler dev",
-		"start": "wrangler dev",
-		"cf-typegen": "wrangler types"
-	},
-	"dependencies": {
-		"chanfana": "^2.0.2",
-		"hono": "^4.4.7",
-		"zod": "^3.23.8"
-	},
-	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20250413.0",
-		"@types/node": "20.8.3",
-		"@types/service-worker-mock": "^2.0.1",
-		"wrangler": "^4.10.0"
-	}
+  "name": "cloudflare-workers-openapi",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250414.0",
+    "@types/node": "20.8.3",
+    "@types/pako": "^2.0.3",
+    "@types/service-worker-mock": "^2.0.1",
+    "@types/uuid": "^10.0.0",
+    "wrangler": "^4.10.0"
+  },
+  "dependencies": {
+    "pako": "^2.1.0",
+    "uuid": "^11.1.0"
+  }
 }

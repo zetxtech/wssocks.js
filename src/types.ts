@@ -1,10 +1,13 @@
-import { DateTime, Str } from "chanfana";
-import { z } from "zod";
+import type { Relay } from "./relay";
+import type { Token } from "./token";
 
-export const Task = z.object({
-	name: Str({ example: "lorem" }),
-	slug: Str(),
-	description: Str({ required: false }),
-	completed: z.boolean().default(false),
-	due_date: DateTime(),
-});
+export interface Env {
+  RELAY: DurableObjectNamespace<Relay>;
+  TOKEN: DurableObjectNamespace<Token>;
+  API_KEY: string;
+}
+
+export interface WebsocketMeta {
+  isProvider?: boolean;
+  channels?: string[];
+}
