@@ -16,11 +16,8 @@ This repository contains the Cloudflare Worker server-side code. You can:
 
 1. Use our public server: `https://wssocks.zetx.tech`
 2. Deploy your own:
-   - Go to Cloudflare Workers dashboard
-   - Click "Create Worker"
-   - Select "Clone from Git URL"
-   - Enter: https://github.com/zetxtech/wssocks.js
-   - Click "Continue"
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zetxtech/wssocks.js)
 
 ## Usage
 
