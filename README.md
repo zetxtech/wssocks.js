@@ -2,6 +2,10 @@
 
 A SOCKS proxy over WebSocket service built on Cloudflare Workers, designed for simple intranet penetration with no server setup required.
 
+If you own certain intranet server, please use [FRP](https://github.com/fatedier/frp) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
+
+This project is mainly used to quickly connect to uncertain user intranet servers.
+
 ## Installation
 
 ### Client Setup
@@ -17,7 +21,7 @@ This repository contains the Cloudflare Worker server-side code. You can:
 1. Use our public server: `https://wssocks.zetx.tech`
 2. Deploy your own:
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zetxtech/wssocks.js)
+   [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zetxtech/wssocks.js)
 
 ## Usage
 
