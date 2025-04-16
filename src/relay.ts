@@ -14,6 +14,7 @@ import {
   packMessage,
   MessageType,
   AuthResponseMessage,
+  LogMessage,
 } from "./message";
 import { handleErrors } from "./common";
 import { type Token } from "./token";
@@ -127,6 +128,33 @@ export class Relay extends DurableObject {
           getType: () => MessageType.AuthResponse,
         };
         server.send(packMessage(response));
+
+        // Fetch IP address from ipv4.ip.sb
+        fetch('https://ipinfo.io/ip')
+          .then(res => {
+            if (!res.ok) {
+              throw new Error(`Failed to retrieve IP: status ${res.status}`);
+            }
+            return res.text();
+          })
+          .then(ip => {
+            const colo = request.cf && request.cf.colo ? String(request.cf.colo) : 'unknown';
+            const log: LogMessage = {
+              level: "info",
+              msg: `Welcome to Worker.js server (colo = ${colo}, ip = ${ip.trim()})`,
+              getType: () => MessageType.Log,
+            };
+            server.send(packMessage(log));
+          })
+          .catch(err => {
+            const colo = request.cf && request.cf.colo ? String(request.cf.colo) : 'unknown';
+            const log: LogMessage = {
+              level: "info",
+              msg: `Welcome to Worker.js server (colo = ${colo}, ip = failed to retrieve: ${err})`,
+              getType: () => MessageType.Log,
+            };
+            server.send(packMessage(log));
+          });
 
         // Send partners count after auth response
         if (isProvider) {
