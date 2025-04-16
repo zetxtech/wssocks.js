@@ -74,7 +74,12 @@ async function handleWebsocket(request: Request, env: Env, tokenHash: string, is
     relayId = env.RELAY.idFromName(tokenHash);
   }
 
-  const relay = env.RELAY.get(relayId);
+  // Check if the request is from APAC region and set locationHint accordingly
+  const apacCountries = ["CN", "HK", "JP", "SG", "MO", "TW", "KR"];
+  const isFromApac = request.cf && request.cf.country && apacCountries.includes(request.cf.country as string);
+  const relay = isFromApac 
+    ? env.RELAY.get(relayId, { locationHint: "apac" })
+    : env.RELAY.get(relayId);
 
   // Add provider/connector information to the URL for the relay
   const newUrl = new URL(request.url);
